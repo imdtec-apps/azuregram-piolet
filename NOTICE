@@ -1,0 +1,6 @@
+Piolet
+Copyright 2026 IMDTEC SAS
+
+This product is distributed under the Apache License, Version 2.0 (see LICENSE).
+The demonstration data set ("digits") is loaded at run time from the scikit-learn
+package, which ships it; it is not redistributed in this repository.

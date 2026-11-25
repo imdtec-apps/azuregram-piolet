@@ -1,0 +1,392 @@
+{
+ "type": "releve",
+ "modele": {
+  "nom": "Démonstration · noyau RBF (Nyström) + régression logistique",
+  "graine": 0
+ },
+ "referentiel": {
+  "id": "chiffres-demo",
+  "titre": "Reconnaître les chiffres manuscrits (démonstration)",
+  "version": "1.0",
+  "source": "scikit-learn, load_digits : 1 797 images 8 × 8, 10 classes",
+  "tache": "classification",
+  "empreinte": "fd769f27847a1e9f77e749feae04025139e8c0e58231a80323ce7f10abdeb7e0",
+  "blocs": [
+   {
+    "id": "B1",
+    "titre": "Chiffres 0 à 4",
+    "competences": [
+     {
+      "id": "C0",
+      "titre": "Reconnaître le chiffre 0",
+      "seuil": 0.9
+     },
+     {
+      "id": "C1",
+      "titre": "Reconnaître le chiffre 1",
+      "seuil": 0.9
+     },
+     {
+      "id": "C2",
+      "titre": "Reconnaître le chiffre 2",
+      "seuil": 0.9
+     },
+     {
+      "id": "C3",
+      "titre": "Reconnaître le chiffre 3",
+      "seuil": 0.9
+     },
+     {
+      "id": "C4",
+      "titre": "Reconnaître le chiffre 4",
+      "seuil": 0.9
+     }
+    ]
+   },
+   {
+    "id": "B2",
+    "titre": "Chiffres 5 à 9",
+    "competences": [
+     {
+      "id": "C5",
+      "titre": "Reconnaître le chiffre 5",
+      "seuil": 0.9
+     },
+     {
+      "id": "C6",
+      "titre": "Reconnaître le chiffre 6",
+      "seuil": 0.9
+     },
+     {
+      "id": "C7",
+      "titre": "Reconnaître le chiffre 7",
+      "seuil": 0.9
+     },
+     {
+      "id": "C8",
+      "titre": "Reconnaître le chiffre 8",
+      "seuil": 0.9
+     },
+     {
+      "id": "C9",
+      "titre": "Reconnaître le chiffre 9",
+      "seuil": 0.9
+     }
+    ]
+   }
+  ],
+  "certification": {
+   "marge": 0.03,
+   "sessions_max": 5,
+   "delai": 3,
+   "croissance": 2.0
+  },
+  "provenances_autorisees": [
+   "public"
+  ]
+ },
+ "certifie": true,
+ "raison": "certifie",
+ "sessions": 1,
+ "reservoir": 897,
+ "formatif": {
+  "tout_acquis": true,
+  "score_min": 0.9355,
+  "score_moyen": 0.9733,
+  "notes": [
+   {
+    "competence": "C0",
+    "bloc": "B1",
+    "score": 0.9667,
+    "seuil": 0.9,
+    "n": 30,
+    "acquise": true
+   },
+   {
+    "competence": "C1",
+    "bloc": "B1",
+    "score": 0.9355,
+    "seuil": 0.9,
+    "n": 30,
+    "acquise": true
+   },
+   {
+    "competence": "C2",
+    "bloc": "B1",
+    "score": 0.9667,
+    "seuil": 0.9,
+    "n": 30,
+    "acquise": true
+   },
+   {
+    "competence": "C3",
+    "bloc": "B1",
+    "score": 0.9836,
+    "seuil": 0.9,
+    "n": 30,
+    "acquise": true
+   },
+   {
+    "competence": "C4",
+    "bloc": "B1",
+    "score": 1.0,
+    "seuil": 0.9,
+    "n": 30,
+    "acquise": true
+   },
+   {
+    "competence": "C5",
+    "bloc": "B2",
+    "score": 0.9836,
+    "seuil": 0.9,
+    "n": 30,
+    "acquise": true
+   },
+   {
+    "competence": "C6",
+    "bloc": "B2",
+    "score": 0.9655,
+    "seuil": 0.9,
+    "n": 30,
+    "acquise": true
+   },
+   {
+    "competence": "C7",
+    "bloc": "B2",
+    "score": 1.0,
+    "seuil": 0.9,
+    "n": 30,
+    "acquise": true
+   },
+   {
+    "competence": "C8",
+    "bloc": "B2",
+    "score": 0.9474,
+    "seuil": 0.9,
+    "n": 30,
+    "acquise": true
+   },
+   {
+    "competence": "C9",
+    "bloc": "B2",
+    "score": 0.9836,
+    "seuil": 0.9,
+    "n": 30,
+    "acquise": true
+   }
+  ]
+ },
+ "certificatif": {
+  "tout_acquis": true,
+  "score_min": 0.9032,
+  "score_moyen": 0.9702,
+  "notes": [
+   {
+    "competence": "C0",
+    "bloc": "B1",
+    "score": 0.9655,
+    "seuil": 0.9,
+    "n": 30,
+    "acquise": true
+   },
+   {
+    "competence": "C1",
+    "bloc": "B1",
+    "score": 1.0,
+    "seuil": 0.9,
+    "n": 30,
+    "acquise": true
+   },
+   {
+    "competence": "C2",
+    "bloc": "B1",
+    "score": 0.9836,
+    "seuil": 0.9,
+    "n": 30,
+    "acquise": true
+   },
+   {
+    "competence": "C3",
+    "bloc": "B1",
+    "score": 0.9667,
+    "seuil": 0.9,
+    "n": 30,
+    "acquise": true
+   },
+   {
+    "competence": "C4",
+    "bloc": "B1",
+    "score": 1.0,
+    "seuil": 0.9,
+    "n": 30,
+    "acquise": true
+   },
+   {
+    "competence": "C5",
+    "bloc": "B2",
+    "score": 0.9032,
+    "seuil": 0.9,
+    "n": 30,
+    "acquise": true
+   },
+   {
+    "competence": "C6",
+    "bloc": "B2",
+    "score": 0.9667,
+    "seuil": 0.9,
+    "n": 30,
+    "acquise": true
+   },
+   {
+    "competence": "C7",
+    "bloc": "B2",
+    "score": 1.0,
+    "seuil": 0.9,
+    "n": 30,
+    "acquise": true
+   },
+   {
+    "competence": "C8",
+    "bloc": "B2",
+    "score": 0.9667,
+    "seuil": 0.9,
+    "n": 30,
+    "acquise": true
+   },
+   {
+    "competence": "C9",
+    "bloc": "B2",
+    "score": 0.9492,
+    "seuil": 0.9,
+    "n": 30,
+    "acquise": true
+   }
+  ]
+ },
+ "tours": [
+  {
+   "tour": 0,
+   "etiquettes": 20,
+   "formatif_min": 0.4898,
+   "decision": "formatif_insuffisant"
+  },
+  {
+   "tour": 1,
+   "etiquettes": 30,
+   "formatif_min": 0.4,
+   "decision": "formatif_insuffisant"
+  },
+  {
+   "tour": 2,
+   "etiquettes": 40,
+   "formatif_min": 0.7586,
+   "decision": "formatif_insuffisant"
+  },
+  {
+   "tour": 3,
+   "etiquettes": 50,
+   "formatif_min": 0.6667,
+   "decision": "formatif_insuffisant"
+  },
+  {
+   "tour": 4,
+   "etiquettes": 60,
+   "formatif_min": 0.8421,
+   "decision": "formatif_insuffisant"
+  },
+  {
+   "tour": 5,
+   "etiquettes": 70,
+   "formatif_min": 0.8525,
+   "decision": "formatif_insuffisant"
+  },
+  {
+   "tour": 6,
+   "etiquettes": 80,
+   "formatif_min": 0.8621,
+   "decision": "formatif_insuffisant"
+  },
+  {
+   "tour": 7,
+   "etiquettes": 90,
+   "formatif_min": 0.8772,
+   "decision": "formatif_insuffisant"
+  },
+  {
+   "tour": 8,
+   "etiquettes": 100,
+   "formatif_min": 0.8814,
+   "decision": "formatif_insuffisant"
+  },
+  {
+   "tour": 9,
+   "etiquettes": 110,
+   "formatif_min": 0.9032,
+   "decision": "formatif_insuffisant"
+  },
+  {
+   "tour": 10,
+   "etiquettes": 120,
+   "formatif_min": 0.918,
+   "decision": "formatif_insuffisant"
+  },
+  {
+   "tour": 11,
+   "etiquettes": 130,
+   "formatif_min": 0.9153,
+   "decision": "formatif_insuffisant"
+  },
+  {
+   "tour": 12,
+   "etiquettes": 140,
+   "formatif_min": 0.918,
+   "decision": "formatif_insuffisant"
+  },
+  {
+   "tour": 13,
+   "etiquettes": 150,
+   "formatif_min": 0.9355,
+   "decision": "certifie",
+   "session": 1,
+   "certificatif_min": 0.9032
+  }
+ ],
+ "ticket": [
+  {
+   "libelle": "Étiquettes utilisées",
+   "valeur": 150,
+   "unite": "étiquettes",
+   "nature": "mesuré",
+   "hypothese": ""
+  },
+  {
+   "libelle": "Sessions de certification",
+   "valeur": 1,
+   "unite": "session",
+   "nature": "mesuré",
+   "hypothese": ""
+  },
+  {
+   "libelle": "Calcul (entraînement et examens)",
+   "valeur": 0.391,
+   "unite": "secondes",
+   "nature": "mesuré",
+   "hypothese": ""
+  }
+ ],
+ "provenance": {
+  "controle": "garde de provenance Piolet",
+  "acceptes": 897,
+  "refuses": 0,
+  "par_provenance": {
+   "public": 897
+  }
+ },
+ "journal": {
+  "fichier": "journal-demo.jsonl",
+  "entrees": 19,
+  "empreinte": "8ba790275182dffa6cb758a5f3c3c6d6e468889b37eb191e012e654364db6f8b",
+  "signe": false
+ },
+ "date": "2026-11-25T11:41:56+00:00"
+}

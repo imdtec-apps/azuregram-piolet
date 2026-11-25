@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Piolet · relevé de compétences du modèle</title>
+<meta name="description" content="Piolet entraîne un modèle d'IA comme on forme un professionnel : un référentiel, un examen par compétence, l'arrêt dès la preuve. Relevé, banc d'essai public et calculateur LoRA.">
+<style>
+:root{
+  color-scheme: light;
+  --bleu:#003192; --bleu-vif:#0049D6; --bleu-nuit:#002370; --bleu-pale:#E5EEF9; --bleu-brume:#C9D7EE;
+  --encre:#0B1530; --encre-2:#4A5570; --gris-trait:#E3E8F1; --gris-marque:#8592AB; --fond:#FFFFFF; --fond-2:#F6F8FC;
+  --bon:#1E7F4F; --alerte:#A15C00;
+  --rayon:14px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--fond);color:var(--encre);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+a{color:var(--bleu-vif)}
+a:focus-visible,button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--bleu-vif);outline-offset:2px}
+.barre{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.94);backdrop-filter:saturate(1.2) blur(6px);border-bottom:1px solid var(--gris-trait)}
+.barre .int{max-width:1080px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.marque{font-weight:700;letter-spacing:.14em;color:var(--bleu);text-decoration:none}
+.marque span{font-weight:400;letter-spacing:0;color:var(--encre-2);margin-left:10px}
+.barre nav{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto}
+.barre nav a{color:var(--encre-2);text-decoration:none;font-size:15px}
+.barre nav a:hover{color:var(--bleu-vif)}
+main{max-width:1080px;margin:0 auto;padding:0 24px 64px}
+section{padding-top:56px}
+.surtitre{font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--bleu-vif);margin:0 0 8px}
+h1{font-size:40px;line-height:1.12;margin:0 0 16px;letter-spacing:-.01em;max-width:820px}
+h2{font-size:28px;line-height:1.2;margin:0 0 12px}
+h3{font-size:19px;margin:0 0 8px}
+.chapeau{font-size:19px;color:var(--encre-2);max-width:760px;margin:0 0 28px}
+.tuiles{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.tuile{background:var(--fond-2);border-radius:var(--rayon);padding:18px 20px}
+.tuile .lib{font-size:14px;color:var(--encre-2);margin:0}
+.tuile .val{font-size:44px;font-weight:650;line-height:1.1;margin:6px 0 4px;color:var(--bleu)}
+.tuile .sous{font-size:14px;color:var(--encre-2);margin:0}
+.carte{border:1px solid var(--gris-trait);border-radius:var(--rayon);padding:24px;background:#fff}
+.entete-releve{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin-bottom:8px}
+.statut{display:inline-flex;align-items:center;gap:8px;font-weight:600;border-radius:999px;padding:6px 14px;font-size:15px}
+.statut.ok{background:#E7F4EC;color:var(--bon)}
+.statut.non{background:#FBF0E2;color:var(--alerte)}
+.meta{font-size:14px;color:var(--encre-2);margin:2px 0}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px}
+.grille2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.bloc{margin-top:20px}
+.bloc h4{font-size:15px;margin:0 0 6px;color:var(--encre-2);font-weight:600}
+.comp{display:grid;grid-template-columns:minmax(0,1fr) 220px 64px;gap:12px;align-items:center;padding:6px 0;border-top:1px solid var(--gris-trait)}
+.comp:first-of-type{border-top:none}
+.comp .nom{font-size:15px}
+.comp .nom b{font-weight:600;margin-right:6px}
+.comp .valeur{text-align:right;font-variant-numeric:tabular-nums;font-size:15px}
+.pastille{display:inline-block;font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;margin-left:8px;vertical-align:1px}
+.pastille.mesure{background:var(--bleu-pale);color:var(--bleu)}
+.pastille.estime{background:#FBF0E2;color:var(--alerte)}
+.ligne-ticket{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--gris-trait);font-size:15px}
+.ligne-ticket:first-child{border-top:none}
+.ligne-ticket .v{font-variant-numeric:tabular-nums;font-weight:600}
+.note{background:var(--bleu-pale);border-radius:var(--rayon);padding:14px 18px;font-size:15px;margin-top:16px}
+.legende{font-size:13px;color:var(--encre-2);margin:6px 0 0}
+.graphe{position:relative}
+.graphe svg{display:block;width:100%;height:auto;overflow:visible}
+.infobulle{position:absolute;pointer-events:none;background:var(--encre);color:#fff;border-radius:8px;padding:8px 10px;font-size:13px;line-height:1.35;white-space:nowrap;opacity:0;transition:opacity .12s;transform:translate(-50%,-110%)}
+.infobulle b{font-size:15px}
+.infobulle.vue{opacity:1}
+details{margin-top:12px}
+summary{cursor:pointer;color:var(--bleu-vif);font-size:14px}
+table.valeurs{border-collapse:collapse;margin-top:8px;font-size:14px;width:100%}
+table.valeurs th,table.valeurs td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--gris-trait);font-variant-numeric:tabular-nums}
+.colonnes{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+ul.puces{margin:8px 0 0;padding-left:20px}
+ul.puces li{margin:4px 0}
+.calc{display:grid;grid-template-columns:1.1fr .9fr;gap:24px}
+.champs{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+.champs label{display:flex;flex-direction:column;font-size:14px;color:var(--encre-2);gap:4px}
+.champs input[type=number]{font:inherit;color:var(--encre);padding:8px 10px;border:1px solid var(--bleu-brume);border-radius:10px}
+.cibles{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:4px}
+.cibles label{flex-direction:row;align-items:center;gap:6px;color:var(--encre)}
+.prereglages{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+button{font:inherit;font-size:14px;border:1px solid var(--bleu-brume);background:#fff;color:var(--bleu);border-radius:999px;padding:6px 14px;cursor:pointer}
+button:hover{background:var(--bleu-pale)}
+.resultat{background:var(--bleu-nuit);color:#fff;border-radius:var(--rayon);padding:22px}
+.resultat .grand{font-size:40px;font-weight:650;line-height:1.1;margin:4px 0}
+.resultat .petit{font-size:14px;color:#C9D7EE;margin:0}
+.resultat hr{border:none;border-top:1px solid rgba(255,255,255,.18);margin:16px 0}
+.etapes{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;counter-reset:e}
+.etape{background:var(--fond-2);border-radius:var(--rayon);padding:16px}
+.etape .n{font-size:13px;font-weight:700;color:var(--bleu-vif);letter-spacing:.08em}
+.etape h3{font-size:16px;margin:6px 0 4px}
+.etape p{font-size:14px;color:var(--encre-2);margin:0}
+.charger{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px;font-size:14px;color:var(--encre-2)}
+footer{border-top:1px solid var(--gris-trait);margin-top:56px;padding:24px;text-align:center;font-size:14px;color:var(--encre-2)}
+.vide{color:var(--encre-2);font-style:italic}
+@media (max-width:860px){
+  h1{font-size:32px}.tuiles,.grille2,.colonnes,.calc{grid-template-columns:1fr}.etapes{grid-template-columns:1fr 1fr}
+  .comp{grid-template-columns:minmax(0,1fr) 120px 56px}
+}
+@media print{.barre,.charger,.prereglages{display:none}section{break-inside:avoid}}
+</style>
+</head>
+<body>
+<header class="barre"><div class="int">
+  <a class="marque" href="#haut">PIOLET<span>entraîner sur preuve</span></a>
+  <nav aria-label="Sections"><a href="#releve">Relevé</a><a href="#banc">Banc d'essai</a><a href="#lora">Calculateur LoRA</a><a href="#methode">Méthode</a></nav>
+</div></header>
+<main id="haut">
+<section>
+  <p class="surtitre">Logiciel libre · Apache-2.0</p>
+  <h1>Entraîner une IA comme on forme un professionnel</h1>
+  <p class="chapeau">Un référentiel de compétences, un examen par compétence, un entraînement limité à ce qui manque, et l'arrêt dès que la preuve est faite. Piolet consigne le tout dans un relevé que chacun peut vérifier.</p>
+  <div class="tuiles" id="tuiles"></div>
+</section>
+
+<section id="releve" aria-labelledby="t-releve">
+  <p class="surtitre">Relevé de compétences du modèle</p>
+  <h2 id="t-releve">Ce que le modèle sait faire, compétence par compétence</h2>
+  <div class="carte" id="carte-releve"><p class="vide">Aucun relevé chargé.</p></div>
+  <div class="charger"><label for="fichier">Ouvrir un autre relevé produit par Piolet (fichier .json) :</label><input type="file" id="fichier" accept="application/json,.json"><span id="msg-fichier" role="status"></span></div>
+</section>
+
+<section id="banc" aria-labelledby="t-banc">
+  <p class="surtitre">Banc d'essai public</p>
+  <h2 id="t-banc">Combien faut-il d'étiquettes et d'époques pour certifier ?</h2>
+  <div id="banc-contenu"><p class="vide">Aucun résultat de banc chargé.</p></div>
+</section>
+
+<section id="lora" aria-labelledby="t-lora">
+  <p class="surtitre">Calculateur</p>
+  <h2 id="t-lora">Ce que coûte un adaptateur LoRA</h2>
+  <p class="chapeau" style="font-size:17px">LoRA gèle le modèle et n'entraîne que deux petites matrices par couche adaptée : rang × (entrée + sortie) paramètres (Hu et al., 2021). Entrez les dimensions de votre modèle, lues dans son fichier de configuration.</p>
+  <div class="calc">
+    <div class="carte">
+      <div class="prereglages" aria-label="Préréglages">
+        <button type="button" data-p='{"couches":32,"dim":4096,"dimkv":4096,"ffn":11008,"total":6.74,"rang":8,"cibles":["q","v"]}'>7 milliards de paramètres</button>
+        <button type="button" data-p='{"couches":22,"dim":2048,"dimkv":256,"ffn":5632,"total":1.1,"rang":8,"cibles":["q","v"]}'>1 milliard (têtes clé-valeur partagées)</button>
+      </div>
+      <div class="champs">
+        <label>Couches<input type="number" id="l-couches" min="1" value="32"></label>
+        <label>Dimension du modèle<input type="number" id="l-dim" min="1" value="4096"></label>
+        <label>Dimension clé-valeur (k, v)<input type="number" id="l-dimkv" min="1" value="4096"></label>
+        <label>Dimension intermédiaire (MLP)<input type="number" id="l-ffn" min="1" value="11008"></label>
+        <label>Rang r<input type="number" id="l-rang" min="1" value="8"></label>
+        <label>Paramètres du modèle (milliards)<input type="number" id="l-total" min="0" step="0.01" value="6.74"></label>
+      </div>
+      <p class="meta" style="margin-top:14px">Matrices adaptées</p>
+      <div class="cibles" id="l-cibles">
+        <label><input type="checkbox" value="q" checked> q</label><label><input type="checkbox" value="k"> k</label><label><input type="checkbox" value="v" checked> v</label><label><input type="checkbox" value="o"> o</label>
+        <label><input type="checkbox" value="gate"> gate</label><label><input type="checkbox" value="up"> up</label><label><input type="checkbox" value="down"> down</label>
+      </div>
+    </div>
+    <div class="resultat" aria-live="polite">
+      <p class="petit">Paramètres entraînables</p>
+      <p class="grand" id="r-params">—</p>
+      <p class="petit" id="r-part">—</p>
+      <hr>
+      <p class="petit">Taille de l'adaptateur sur disque</p>
+      <p class="grand" style="font-size:30px" id="r-taille">—</p>
+      <p class="petit">en 16 bits (2 octets par paramètre)</p>
+      <hr>
+      <p class="petit">Avec Piolet : un adaptateur par bloc de compétences. Quand un bloc du référentiel change, seul son adaptateur est réentraîné et réexaminé.</p>
+    </div>
+  </div>
+</section>
+
+<section id="methode" aria-labelledby="t-methode">
+  <p class="surtitre">La méthode</p>
+  <h2 id="t-methode">Cinq étapes, empruntées à la formation professionnelle</h2>
+  <div class="etapes">
+    <div class="etape"><p class="n">ÉTAPE 1</p><h3>Référentiel</h3><p>Des blocs, des compétences, un seuil pour chacune, comme un titre RNCP.</p></div>
+    <div class="etape"><p class="n">ÉTAPE 2</p><h3>Positionnement</h3><p>Le modèle passe l'examen formatif avant tout entraînement.</p></div>
+    <div class="etape"><p class="n">ÉTAPE 3</p><h3>Remédiation</h3><p>On ne fait étiqueter que les cas où le modèle hésite.</p></div>
+    <div class="etape"><p class="n">ÉTAPE 4</p><h3>Certification</h3><p>Un examen distinct, scellé, décide. Sessions limitées.</p></div>
+    <div class="etape"><p class="n">ÉTAPE 5</p><h3>Relevé signé</h3><p>Scores, coût mesuré, provenance des données, journal chaîné.</p></div>
+  </div>
+  <div class="note">Garde de provenance : un exemple d'entraînement qui ne dit pas d'où il vient, ou qui vient d'un modèle tiers, est refusé. Garde de promotion : un nouveau modèle ne remplace l'ancien que s'il ne recule sur aucune compétence.</div>
+</section>
+</main>
+<footer>Piolet est un logiciel libre (Apache-2.0) publié par IMDTEC SAS. Cette page ne contacte aucun serveur : tout est calculé dans votre navigateur.</footer>
+
+<script type="application/json" id="piolet-donnees">/*__PIOLET_DONNEES__*/</script>
+<script>
+(function(){
+"use strict";
+var NF = function(d){ return new Intl.NumberFormat("fr-FR",{minimumFractionDigits:d,maximumFractionDigits:d}); };
+var n0 = NF(0), n2 = NF(2), n3 = NF(3);
+function pct(x){ return new Intl.NumberFormat("fr-FR",{style:"percent",maximumFractionDigits:0}).format(x); }
+function el(tag, attrs, texte){
+  var e = document.createElement(tag);
+  if (attrs) for (var k in attrs){ if (k === "class") e.className = attrs[k]; else e.setAttribute(k, attrs[k]); }
+  if (texte !== undefined && texte !== null) e.textContent = String(texte);
+  return e;
+}
+var SVGNS = "http://www.w3.org/2000/svg";
+function s(tag, attrs){ var e = document.createElementNS(SVGNS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
+function vider(n){ while (n.firstChild) n.removeChild(n.firstChild); }
+
+var donnees = {};
+try { donnees = JSON.parse(document.getElementById("piolet-donnees").textContent || "{}"); } catch(e) { donnees = {}; }
+
+/* ------------------------------------------------------------ infobulle */
+function infobulle(conteneur){
+  var b = el("div",{"class":"infobulle","role":"tooltip"});
+  conteneur.appendChild(b);
+  return {
+    montrer: function(x, y, valeur, libelle){
+      vider(b); b.appendChild(el("b",null,valeur)); b.appendChild(el("br")); b.appendChild(document.createTextNode(libelle));
+      b.style.left = x + "px"; b.style.top = y + "px"; b.classList.add("vue");
+    },
+    cacher: function(){ b.classList.remove("vue"); }
+  };
+}
+
+/* ------------------------------------------------------------ tuiles */
+function tuiles(banc){
+  var t = document.getElementById("tuiles"); vider(t);
+  if (!banc || !banc.etiquettes) { t.style.display = "none"; return; }
+  var A = banc.etiquettes, B = banc.epoques || {};
+  function tuile(lib, val, sous){ var d = el("div",{"class":"tuile"}); d.appendChild(el("p",{"class":"lib"},lib)); d.appendChild(el("p",{"class":"val"},val)); d.appendChild(el("p",{"class":"sous"},sous)); t.appendChild(d); }
+  if (A.piolet && A.volume){
+    var p = A.piolet.resume.etiquettes.mediane, v = A.volume.resume.etiquettes.mediane;
+    tuile("Étiquettes pour certifier", "−" + pct(1 - p / v), n0.format(p) + " au lieu de " + n0.format(v) + " (médiane, " + banc.config.graines + " graines)");
+  }
+  if (B.piolet && B.fixe){
+    var pe = B.piolet.resume.epoques.mediane, fe = B.fixe.resume.epoques.mediane;
+    tuile("Époques d'entraînement", "−" + pct(1 - pe / fe), n0.format(pe) + " au lieu de " + n0.format(fe) + " (médiane)");
+  }
+  if (A.piolet){
+    tuile("Niveau tenu sur un test jamais vu", pct(A.piolet.resume.test_taux_toutes_acquises), "des modèles certifiés gardent les 10 compétences au-dessus du seuil");
+  }
+}
+
+/* ------------------------------------------------------------ relevé */
+function releve(r){
+  var c = document.getElementById("carte-releve"); vider(c);
+  if (!r || r.type !== "releve") { c.appendChild(el("p",{"class":"vide"},"Aucun relevé chargé.")); return; }
+  var ref = r.referentiel || {};
+  var tete = el("div",{"class":"entete-releve"});
+  var g = el("div");
+  g.appendChild(el("h3",null,(r.modele && r.modele.nom) || "Modèle"));
+  g.appendChild(el("p",{"class":"meta"},"Référentiel : " + (ref.titre || ref.id || "?") + " · version " + (ref.version || "?")));
+  g.appendChild(el("p",{"class":"meta mono"},"Empreinte du référentiel : " + String(ref.empreinte || "").slice(0,16) + "…"));
+  if (r.date) g.appendChild(el("p",{"class":"meta"},"Établi le " + new Date(r.date).toLocaleString("fr-FR")));
+  tete.appendChild(g);
+  var st = el("span",{"class":"statut " + (r.certifie ? "ok" : "non")}, r.certifie ? "✓ Certifié · session " + r.sessions : "Non certifié · " + (r.raison || ""));
+  tete.appendChild(st);
+  c.appendChild(tete);
+
+  var grille = el("div",{"class":"grille2"});
+  var gauche = el("div"), droite = el("div");
+  /* compétences : point = examen certificatif (ou formatif à défaut), repère = seuil */
+  var notesC = {}, notesF = {};
+  ((r.certificatif || {}).notes || []).forEach(function(n){ notesC[n.competence] = n; });
+  ((r.formatif || {}).notes || []).forEach(function(n){ notesF[n.competence] = n; });
+  var source = r.certificatif ? "examen certificatif" : "examen formatif";
+  gauche.appendChild(el("p",{"class":"meta"},"Score F1 par compétence à l'" + source + " (point) et seuil requis (trait). Échelle de 0,80 à 1,00."));
+  var MIN = 0.80, MAX = 1.00;
+  (ref.blocs || []).forEach(function(b){
+    var bloc = el("div",{"class":"bloc"});
+    bloc.appendChild(el("h4",null, b.id + " · " + b.titre));
+    b.competences.forEach(function(comp){
+      var n = notesC[comp.id] || notesF[comp.id];
+      var ligne = el("div",{"class":"comp"});
+      var nom = el("div",{"class":"nom"}); nom.appendChild(el("b",null,comp.id)); nom.appendChild(document.createTextNode(comp.titre));
+      ligne.appendChild(nom);
+      var w = 220, h = 22, x = function(v){ return Math.max(0, Math.min(1, (v - MIN) / (MAX - MIN))) * (w - 12) + 6; };
+      var svg = s("svg",{viewBox:"0 0 " + w + " " + h, role:"img", "aria-label": comp.id + " : " + (n ? n3.format(n.score) : "non évaluée") + ", seuil " + n2.format(comp.seuil)});
+      svg.appendChild(s("line",{x1:6,x2:w-6,y1:h/2,y2:h/2,stroke:"#E3E8F1","stroke-width":4,"stroke-linecap":"round"}));
+      svg.appendChild(s("line",{x1:x(comp.seuil),x2:x(comp.seuil),y1:3,y2:h-3,stroke:"#4A5570","stroke-width":2}));
+      if (n){ svg.appendChild(s("circle",{cx:x(n.score),cy:h/2,r:6,fill:(n.score >= comp.seuil ? "#0049D6" : "#A15C00"),stroke:"#fff","stroke-width":2})); }
+      ligne.appendChild(svg);
+      ligne.appendChild(el("div",{"class":"valeur"}, n ? n3.format(n.score) : "—"));
+      bloc.appendChild(ligne);
+    });
+    gauche.appendChild(bloc);
+  });
+  /* trajectoire */
+  if (r.tours && r.tours.length > 1){ droite.appendChild(trajectoire(r)); }
+  /* ticket */
+  var tk = el("div",{"class":"bloc"}); tk.appendChild(el("h4",null,"Ticket de coût"));
+  (r.ticket || []).forEach(function(l){
+    var li = el("div",{"class":"ligne-ticket"});
+    var a = el("span",null,l.libelle); var p = el("span",{"class":"pastille " + (l.nature === "estimé" ? "estime" : "mesure")}, l.nature); a.appendChild(p);
+    li.appendChild(a);
+    var val = Number.isInteger(l.valeur) ? n0.format(l.valeur) : NF(2).format(l.valeur);
+    li.appendChild(el("span",{"class":"v"}, val + " " + l.unite + (l.hypothese ? " (" + l.hypothese + ")" : "")));
+    tk.appendChild(li);
+  });
+  droite.appendChild(tk);
+  if (r.provenance){
+    var pv = el("div",{"class":"note"});
+    var parts = []; for (var k in (r.provenance.par_provenance || {})) parts.push(n0.format(r.provenance.par_provenance[k]) + " « " + k + " »");
+    pv.textContent = "Garde de provenance : " + n0.format(r.provenance.acceptes) + " exemples contrôlés et acceptés (" + parts.join(", ") + "), " + n0.format(r.provenance.refuses) + " refusé" + (r.provenance.refuses > 1 ? "s" : "") + ".";
+    droite.appendChild(pv);
+  }
+  if (r.journal){
+    var j = el("div",{"class":"bloc"}); j.appendChild(el("h4",null,"Journal chaîné"));
+    j.appendChild(el("p",{"class":"meta"}, n0.format(r.journal.entrees) + " entrées · ancre : " + String(r.journal.empreinte || "").slice(0,16) + "…" + (r.journal.signe ? " · signée" : " · non signée (démonstration)")));
+    j.appendChild(el("p",{"class":"meta mono"},"piolet journal verifier " + (r.journal.fichier || "journal.jsonl") + " --ancre ancre-demo.json"));
+    droite.appendChild(j);
+  }
+  grille.appendChild(gauche); grille.appendChild(droite);
+  c.appendChild(grille);
+}
+
+function trajectoire(r){
+  var bloc = el("div",{"class":"bloc"});
+  bloc.appendChild(el("h4",null,"Compétence la plus faible, à chaque tour"));
+  var tours = r.tours, cert = r.referentiel.certification || {marge:0};
+  var seuils = []; (r.referentiel.blocs || []).forEach(function(b){ b.competences.forEach(function(c){ seuils.push(c.seuil); }); });
+  var seuil = seuils.length ? Math.max.apply(null, seuils) : 0.9;
+  var W = 480, H = 220, g = {l:44, r:16, t:12, b:34};
+  var xs = tours.map(function(t){ return t.etiquettes; }), xmin = Math.min.apply(null, xs), xmax = Math.max.apply(null, xs);
+  var X = function(v){ return g.l + (v - xmin) / Math.max(1, xmax - xmin) * (W - g.l - g.r); };
+  var Y = function(v){ return g.t + (1 - Math.max(0, v)) * (H - g.t - g.b); };
+  var cont = el("div",{"class":"graphe"});
+  var svg = s("svg",{viewBox:"0 0 " + W + " " + H, role:"img", "aria-label":"Score de la compétence la plus faible à l'examen formatif selon le nombre d'étiquettes ; seuil " + n2.format(seuil) + "."});
+  [0, 0.25, 0.5, 0.75, 1].forEach(function(v){
+    svg.appendChild(s("line",{x1:g.l,x2:W-g.r,y1:Y(v),y2:Y(v),stroke:"#E3E8F1","stroke-width":1}));
+    var t = s("text",{x:g.l-8,y:Y(v)+4,"text-anchor":"end","font-size":11,fill:"#4A5570"}); t.textContent = n2.format(v); svg.appendChild(t);
+  });
+  var ts = s("line",{x1:g.l,x2:W-g.r,y1:Y(seuil),y2:Y(seuil),stroke:"#4A5570","stroke-width":1.5}); svg.appendChild(ts);
+  var tl = s("text",{x:g.l+6,y:Y(seuil)-6,"text-anchor":"start","font-size":11,fill:"#4A5570"}); tl.textContent = "seuil " + n2.format(seuil); svg.appendChild(tl);
+  var d = tours.map(function(t, i){ return (i ? "L" : "M") + X(t.etiquettes).toFixed(1) + " " + Y(t.formatif_min).toFixed(1); }).join(" ");
+  svg.appendChild(s("path",{d:d,fill:"none",stroke:"#0049D6","stroke-width":2,"stroke-linejoin":"round","stroke-linecap":"round"}));
+  tours.forEach(function(t){
+    if (t.session){ svg.appendChild(s("circle",{cx:X(t.etiquettes),cy:Y(t.formatif_min),r:5,fill:(t.decision === "certifie" ? "#0049D6" : "#A15C00"),stroke:"#fff","stroke-width":2})); }
+  });
+  [xmin, Math.round((xmin + xmax) / 2), xmax].forEach(function(v){ var t = s("text",{x:X(v),y:H-12,"text-anchor":"middle","font-size":11,fill:"#4A5570"}); t.textContent = n0.format(v); svg.appendChild(t); });
+  var ax = s("text",{x:(g.l + W - g.r)/2,y:H,"text-anchor":"middle","font-size":11,fill:"#4A5570"}); ax.textContent = "étiquettes utilisées"; svg.appendChild(ax);
+  var croix = s("line",{x1:0,x2:0,y1:g.t,y2:H-g.b,stroke:"#8592AB","stroke-width":1,opacity:0}); svg.appendChild(croix);
+  var zone = s("rect",{x:g.l,y:g.t,width:W-g.l-g.r,height:H-g.t-g.b,fill:"transparent",tabindex:0,"aria-label":"Parcourir les tours"});
+  svg.appendChild(zone);
+  cont.appendChild(svg);
+  var ib = infobulle(cont), courant = tours.length - 1;
+  function montrer(i){
+    courant = i; var t = tours[i], rect = svg.getBoundingClientRect(), k = rect.width / W;
+    croix.setAttribute("x1", X(t.etiquettes)); croix.setAttribute("x2", X(t.etiquettes)); croix.setAttribute("opacity", 1);
+    var lib = "tour " + t.tour + " · " + n0.format(t.etiquettes) + " étiquettes" + (t.session ? " · session " + t.session + (t.decision === "certifie" ? " réussie" : " échouée") : "");
+    ib.montrer(X(t.etiquettes) * k, Y(t.formatif_min) * k, n3.format(t.formatif_min), lib);
+  }
+  zone.addEventListener("pointermove", function(ev){
+    var rect = svg.getBoundingClientRect(), xv = (ev.clientX - rect.left) * W / rect.width, best = 0, bd = 1e9;
+    tours.forEach(function(t, i){ var dd = Math.abs(X(t.etiquettes) - xv); if (dd < bd){ bd = dd; best = i; } }); montrer(best);
+  });
+  zone.addEventListener("pointerleave", function(){ ib.cacher(); croix.setAttribute("opacity", 0); });
+  zone.addEventListener("focus", function(){ montrer(courant); });
+  zone.addEventListener("blur", function(){ ib.cacher(); croix.setAttribute("opacity", 0); });
+  zone.addEventListener("keydown", function(ev){
+    if (ev.key === "ArrowRight"){ montrer(Math.min(tours.length - 1, courant + 1)); ev.preventDefault(); }
+    if (ev.key === "ArrowLeft"){ montrer(Math.max(0, courant - 1)); ev.preventDefault(); }
+  });
+  bloc.appendChild(cont);
+  bloc.appendChild(el("p",{"class":"legende"},"Points : sessions de certification (bleu réussie, orange échouée). La session s'ouvre quand l'examen formatif dépasse le seuil de la marge " + n2.format(cert.marge || 0) + "."));
+  return bloc;
+}
+
+/* ------------------------------------------------------------ banc */
+function barres(titre, lignes, cle, unite, mentionAxe){
+  /* lignes : [{id, libelle, mediane, q1, q3, sous}] ; une série, la ligne Piolet en couleur, les autres en gris */
+  var bloc = el("div",{"class":"carte", style:"margin-top:16px"});
+  bloc.appendChild(el("h3",null,titre));
+  var W = 960, gL = 330, gR = 70, hb = 22, pas = 58, top = 8, H = top + lignes.length * pas + 30;
+  var max = Math.max.apply(null, lignes.map(function(l){ return Math.max(l.q3, l.mediane); }));
+  var X = function(v){ return gL + v / max * (W - gL - gR); };
+  var cont = el("div",{"class":"graphe"});
+  var svg = s("svg",{viewBox:"0 0 " + W + " " + H, role:"img", "aria-label": titre + ". " + lignes.map(function(l){ return l.libelle + " : " + n0.format(l.mediane) + " " + unite; }).join(" ; ")});
+  var pasAxe = Math.pow(10, Math.floor(Math.log10(max))) ; if (max / pasAxe < 3) pasAxe /= 2;
+  for (var v = 0; v <= max + 1e-9; v += pasAxe){
+    svg.appendChild(s("line",{x1:X(v),x2:X(v),y1:top,y2:H-26,stroke:"#E3E8F1","stroke-width":1}));
+    var tx = s("text",{x:X(v),y:H-8,"text-anchor":"middle","font-size":13,fill:"#4A5570"}); tx.textContent = n0.format(v); svg.appendChild(tx);
+  }
+  var ib = infobulle(cont);
+  lignes.forEach(function(l, i){
+    var y = top + i * pas + 6, accent = l.id === "piolet";
+    var t1 = s("text",{x:0,y:y+11,"font-size":15,"font-weight":accent ? 700 : 500,fill:"#0B1530"}); t1.textContent = l.libelle; svg.appendChild(t1);
+    var t2 = s("text",{x:0,y:y+31,"font-size":13,fill:"#4A5570"}); t2.textContent = l.sous; svg.appendChild(t2);
+    var x0 = X(0), x1 = X(l.mediane), r = Math.min(4, (x1 - x0) / 2);
+    var d = "M" + x0 + " " + y + " H" + (x1 - r) + " Q" + x1 + " " + y + " " + x1 + " " + (y + r) + " V" + (y + hb - r) + " Q" + x1 + " " + (y + hb) + " " + (x1 - r) + " " + (y + hb) + " H" + x0 + " Z";
+    svg.appendChild(s("path",{d:d,fill:accent ? "#0049D6" : "#8592AB"}));
+    if (l.q3 > l.q1){
+      svg.appendChild(s("line",{x1:X(l.q1),x2:X(l.q3),y1:y+hb/2,y2:y+hb/2,stroke:"#0B1530","stroke-width":2,"stroke-linecap":"round",opacity:.55}));
+      [l.q1, l.q3].forEach(function(q){ svg.appendChild(s("line",{x1:X(q),x2:X(q),y1:y+hb/2-5,y2:y+hb/2+5,stroke:"#0B1530","stroke-width":2,"stroke-linecap":"round",opacity:.55})); });
+    }
+    var tv = s("text",{x:Math.max(x1, X(l.q3)) + 8,y:y+hb/2+5,"font-size":15,"font-weight":600,fill:"#0B1530"}); tv.textContent = n0.format(l.mediane); svg.appendChild(tv);
+    var cible = s("rect",{x:0,y:y-6,width:W,height:pas-4,fill:"transparent",tabindex:0,"aria-label":l.libelle + " : médiane " + n0.format(l.mediane) + " " + unite + ", écart interquartile " + n0.format(l.q1) + " à " + n0.format(l.q3)});
+    function voir(){ var rect = svg.getBoundingClientRect(), k = rect.width / W; ib.montrer(x1 * k, y * k, n0.format(l.mediane) + " " + unite, "médiane · quartiles " + n0.format(l.q1) + " à " + n0.format(l.q3)); }
+    cible.addEventListener("pointermove", voir); cible.addEventListener("focus", voir);
+    cible.addEventListener("pointerleave", ib.cacher); cible.addEventListener("blur", ib.cacher);
+    svg.appendChild(cible);
+  });
+  cont.appendChild(svg);
+  bloc.appendChild(cont);
+  bloc.appendChild(el("p",{"class":"legende"}, mentionAxe));
+  var det = el("details"); det.appendChild(el("summary",null,"Voir les valeurs"));
+  var tb = el("table",{"class":"valeurs"}); var tr = el("tr");
+  ["Méthode","Médiane","1er quartile","3e quartile","Certifiés","Test : toutes acquises","Test : F1 le plus bas (moyenne)"].forEach(function(h){ tr.appendChild(el("th",{scope:"col"},h)); });
+  tb.appendChild(tr);
+  lignes.forEach(function(l){ var r = el("tr"); [l.libelle, n0.format(l.mediane), n0.format(l.q1), n0.format(l.q3), l.sanscert ? "sans examen" : pct(l.cert), pct(l.testok), n3.format(l.testmin)].forEach(function(v){ r.appendChild(el("td",null,v)); }); tb.appendChild(r); });
+  det.appendChild(tb); bloc.appendChild(det);
+  return bloc;
+}
+
+function banc(b){
+  var c = document.getElementById("banc-contenu"); vider(c);
+  if (!b || b.type !== "banc") { c.appendChild(el("p",{"class":"vide"},"Aucun résultat de banc chargé.")); return; }
+  var cfg = b.config;
+  c.appendChild(el("p",{"class":"chapeau",style:"font-size:17px"},
+    "Données publiques : les 1 797 images de chiffres manuscrits de scikit-learn. Dix compétences, une par chiffre, chacune avec un seuil F1 de 0,90. Pour chacune des " + cfg.graines +
+    " graines, les images sont réparties sans recouvrement : examen formatif (" + cfg.n_formatif * 10 + "), examen certificatif (" + cfg.n_certificatif * 10 + "), test final jamais vu (" + cfg.n_test * 10 + ") et réservoir à étiqueter (le reste)."));
+  function lignes(groupe, cle, ordre){
+    return ordre.filter(function(k){ return groupe[k]; }).map(function(k){
+      var rs = groupe[k].resume, st = rs[cle];
+      return {id:k, sanscert:rs.sessions_moyennes === 0, libelle:groupe[k].libelle, mediane:st.mediane, q1:st.q1, q3:st.q3, cert:rs.taux_certification, testok:rs.test_taux_toutes_acquises, testmin:rs.test_score_min_moyen,
+        sous:(rs.sessions_moyennes === 0 ? "sans examen de certification" : "certifiés " + pct(rs.taux_certification)) + " · test final tenu " + pct(rs.test_taux_toutes_acquises)};
+    });
+  }
+  c.appendChild(barres("Expérience A · étiquettes utilisées pour certifier", lignes(b.etiquettes, "etiquettes", ["volume","uniforme","incertitude_naif","piolet","piolet_marge0","ciblee"]), "etiquettes", "étiquettes",
+    "Barre : médiane sur " + cfg.graines + " graines. Trait : écart interquartile. « Test final tenu » : part des modèles dont les dix compétences restent au-dessus du seuil sur le test jamais vu."));
+  if (b.epoques && Object.keys(b.epoques).length){
+    c.appendChild(barres("Expérience B · époques d'entraînement, toutes les étiquettes disponibles", lignes(b.epoques, "epoques", ["fixe","arret_sklearn","piolet","piolet_marge0"]), "epoques", "époques",
+      "Même réseau (une couche cachée de " + cfg.cachees + " neurones), mêmes données. L'arrêt précoce de scikit-learn surveille un jeu de validation, pas le référentiel. Quand le modèle plafonne près du seuil, Piolet va jusqu'au budget et passe une session finale : d'où le 3e quartile à " + n0.format(b.epoques.piolet ? b.epoques.piolet.resume.epoques.q3 : 0) + "."));
+  }
+  var cols = el("div",{"class":"colonnes",style:"margin-top:20px"});
+  var g = el("div",{"class":"carte"}); g.appendChild(el("h3",null,"Ce que montrent ces chiffres"));
+  var ul = el("ul",{"class":"puces"});
+  var A = b.etiquettes, B = b.epoques || {};
+  if (A.piolet && A.volume) ul.appendChild(el("li",null,"Piolet certifie avec " + n0.format(A.piolet.resume.etiquettes.mediane) + " étiquettes au lieu de " + n0.format(A.volume.resume.etiquettes.mediane) + " : le niveau requis, pas davantage."));
+  if (A.incertitude_naif && A.piolet) ul.appendChild(el("li",null,"S'arrêter au premier examen réussi coûte moins (" + n0.format(A.incertitude_naif.resume.etiquettes.mediane) + "), mais seuls " + pct(A.incertitude_naif.resume.test_taux_toutes_acquises) + " des modèles tiennent sur le test final, contre " + pct(A.piolet.resume.test_taux_toutes_acquises) + " avec l'examen de certification séparé."));
+  if (B.piolet && B.fixe) ul.appendChild(el("li",null,"Sur les époques, Piolet s'arrête après " + n0.format(B.piolet.resume.epoques.mediane) + " au lieu de " + n0.format(B.fixe.resume.epoques.mediane) + " (médiane). Le niveau tient sur le test final pour " + pct(B.piolet.resume.test_taux_toutes_acquises) + " des modèles, contre " + pct(B.fixe.resume.test_taux_toutes_acquises) + " après 200 époques."));
+  if (B.arret_sklearn) ul.appendChild(el("li",null,"L'arrêt précoce classique est aussi rapide, mais il ne connaît pas le niveau exigé : " + pct(B.arret_sklearn.resume.test_taux_toutes_acquises) + " des modèles seulement tiennent le seuil."));
+  g.appendChild(ul);
+  var d = el("div",{"class":"carte"}); d.appendChild(el("h3",null,"Ce qu'ils ne montrent pas"));
+  var ul2 = el("ul",{"class":"puces"});
+  var limites = ["Un petit jeu de données et des modèles simples : le transfert vers un grand modèle de langage affiné par LoRA reste à mesurer.",
+   "La certification se fait à un seuil : un modèle juste au-dessus peut passer sous le seuil sur un autre test. Une marge plus grande coûte plus d'étiquettes."];
+  if (A.ciblee) limites.push("La variante « ciblée » (privilégier les compétences en échec) n'a pas fait mieux que l'incertitude : " + n0.format(A.ciblee.resume.etiquettes.mediane) + " étiquettes, test final tenu " + pct(A.ciblee.resume.test_taux_toutes_acquises) + ".");
+  limites.push("Les temps de calcul dépendent de la machine ; les comptes d'étiquettes et d'époques, non.");
+  limites.forEach(function(t){ ul2.appendChild(el("li",null,t)); });
+  d.appendChild(ul2);
+  cols.appendChild(g); cols.appendChild(d); c.appendChild(cols);
+  c.appendChild(el("p",{"class":"legende",style:"margin-top:12px"}, "Piolet " + b.piolet + " · Python " + b.environnement.python + " · scikit-learn " + b.environnement["scikit-learn"] + " · " + new Date(b.date).toLocaleDateString("fr-FR") + ". Reproduire : piolet banc --graines " + cfg.graines + "."));
+}
+
+/* ------------------------------------------------------------ calculateur LoRA */
+function lora(){
+  function v(id){ return Math.max(0, Number(document.getElementById(id).value) || 0); }
+  function calculer(){
+    var L = v("l-couches"), d = v("l-dim"), kv = v("l-dimkv") || d, f = v("l-ffn"), r = v("l-rang"), tot = v("l-total") * 1e9;
+    var formes = {q:[d,d], k:[d,kv], v:[d,kv], o:[d,d], gate:[d,f], up:[d,f], down:[f,d]};
+    var somme = 0;
+    document.querySelectorAll("#l-cibles input:checked").forEach(function(c){ var m = formes[c.value]; somme += r * (m[0] + m[1]); });
+    var p = L * somme;
+    document.getElementById("r-params").textContent = n0.format(p);
+    document.getElementById("r-part").textContent = tot > 0 ? "soit " + new Intl.NumberFormat("fr-FR",{maximumSignificantDigits:2}).format(100 * p / tot) + " % des paramètres du modèle" : "";
+    var o = p * 2, u = o >= 1e9 ? [o / 1e9, "Go"] : [o / 1e6, "Mo"];
+    document.getElementById("r-taille").textContent = NF(1).format(u[0]) + " " + u[1];
+  }
+  document.querySelectorAll(".calc input").forEach(function(i){ i.addEventListener("input", calculer); });
+  document.querySelectorAll(".prereglages button").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var p = JSON.parse(btn.getAttribute("data-p"));
+      document.getElementById("l-couches").value = p.couches; document.getElementById("l-dim").value = p.dim; document.getElementById("l-dimkv").value = p.dimkv;
+      document.getElementById("l-ffn").value = p.ffn; document.getElementById("l-total").value = p.total; document.getElementById("l-rang").value = p.rang;
+      document.querySelectorAll("#l-cibles input").forEach(function(c){ c.checked = p.cibles.indexOf(c.value) >= 0; });
+      calculer();
+    });
+  });
+  calculer();
+}
+
+/* ------------------------------------------------------------ chargement d'un relevé local */
+document.getElementById("fichier").addEventListener("change", function(ev){
+  var f = ev.target.files && ev.target.files[0], msg = document.getElementById("msg-fichier");
+  if (!f) return;
+  var lecteur = new FileReader();
+  lecteur.onload = function(){
+    try {
+      var d = JSON.parse(lecteur.result);
+      if (d.type === "releve") { releve(d); msg.textContent = "Relevé chargé (lu sur votre appareil, rien n'est envoyé)."; }
+      else if (d.type === "banc") { banc(d); tuiles(d); msg.textContent = "Résultats de banc chargés."; }
+      else msg.textContent = "Ce fichier n'est pas un relevé Piolet.";
+    } catch(e) { msg.textContent = "Fichier illisible : " + e.message; }
+  };
+  lecteur.readAsText(f);
+});
+
+tuiles(donnees.banc); releve(donnees.releve); banc(donnees.banc); lora();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "Si vous utilisez Piolet, merci de le citer ainsi."
+title: "Piolet : entraîner sur preuve"
+abstract: "Un greffon d'entraînement qui pilote un modèle par un référentiel de compétences, un examen par compétence, une certification à deux examens et un relevé vérifiable."
+type: software
+authors:
+  - name: "IMDTEC SAS"
+version: 0.1.0
+date-released: 2026-11-25
+license: Apache-2.0
+keywords:
+  - active learning
+  - early stopping
+  - LoRA
+  - frugal AI
+  - competency-based training

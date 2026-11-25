@@ -1,0 +1,32 @@
+# Référentiel de démonstration du banc d'essai public.
+# Données : les images de chiffres manuscrits fournies avec scikit-learn (load_digits).
+piolet: 1
+id: chiffres-demo
+titre: "Reconnaître les chiffres manuscrits (démonstration)"
+version: "1.0"
+source: "scikit-learn, load_digits : 1 797 images 8 × 8, 10 classes"
+tache: classification
+seuil: 0.90
+certification:
+  marge: 0.03
+  sessions_max: 5
+  delai: 3
+  croissance: 2
+provenances_autorisees: [public]
+blocs:
+  - id: B1
+    titre: "Chiffres 0 à 4"
+    competences:
+      - {id: C0, titre: "Reconnaître le chiffre 0", etiquette: 0}
+      - {id: C1, titre: "Reconnaître le chiffre 1", etiquette: 1}
+      - {id: C2, titre: "Reconnaître le chiffre 2", etiquette: 2}
+      - {id: C3, titre: "Reconnaître le chiffre 3", etiquette: 3}
+      - {id: C4, titre: "Reconnaître le chiffre 4", etiquette: 4}
+  - id: B2
+    titre: "Chiffres 5 à 9"
+    competences:
+      - {id: C5, titre: "Reconnaître le chiffre 5", etiquette: 5}
+      - {id: C6, titre: "Reconnaître le chiffre 6", etiquette: 6}
+      - {id: C7, titre: "Reconnaître le chiffre 7", etiquette: 7}
+      - {id: C8, titre: "Reconnaître le chiffre 8", etiquette: 8}
+      - {id: C9, titre: "Reconnaître le chiffre 9", etiquette: 9}

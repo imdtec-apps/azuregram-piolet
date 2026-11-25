@@ -1,0 +1,40 @@
+# Référentiel Piolet pour Piolet SkillMatch : relier une tâche de poste à une compétence
+# du titre professionnel Développeur web et web mobile.
+#
+# Intitulés recopiés de la fiche RNCP37674 (France compétences, arrêté du 26 avril 2023,
+# certificateur : ministère du Travail). Seuil et taille des examens : propositions à
+# valider par l'équipe pédagogique.
+piolet: 1
+id: rncp37674-dwwm-skillmatch
+titre: "Piolet SkillMatch · titre professionnel Développeur web et web mobile"
+version: "0.1"
+source: "RNCP37674, fiche France compétences, blocs RNCP37674BC01 et RNCP37674BC02"
+tache: classification
+seuil: 0.85
+certification:
+  marge: 0.03
+  sessions_max: 5
+  delai: 3
+  croissance: 2
+# Seuls les formateurs et les experts métier écrivent les exemples et les examens.
+# Aucune sortie d'un modèle tiers n'est acceptée : la garde de provenance la refuse.
+provenances_autorisees: [formateur, expert-metier]
+examens:
+  formatif: examen_formatif.csv
+  certificatif: examen_certificatif.csv
+  items_par_competence: 30
+blocs:
+  - id: BC01
+    titre: "Développer la partie front-end d'une application web ou web mobile sécurisée"
+    competences:
+      - {id: C1, etiquette: C1, titre: "Installer et configurer son environnement de travail en fonction du projet web ou web mobile"}
+      - {id: C2, etiquette: C2, titre: "Maquetter des interfaces utilisateur web ou web mobile"}
+      - {id: C3, etiquette: C3, titre: "Réaliser des interfaces utilisateur statiques web ou web mobile"}
+      - {id: C4, etiquette: C4, titre: "Développer la partie dynamique des interfaces utilisateur web ou web mobile"}
+  - id: BC02
+    titre: "Développer la partie back-end d'une application web ou web mobile sécurisée"
+    competences:
+      - {id: C5, etiquette: C5, titre: "Mettre en place une base de données relationnelle"}
+      - {id: C6, etiquette: C6, titre: "Développer des composants d'accès aux données SQL et NoSQL"}
+      - {id: C7, etiquette: C7, titre: "Développer des composants métier coté serveur"}
+      - {id: C8, etiquette: C8, titre: "Documenter le déploiement d'une application dynamique web ou web mobile"}

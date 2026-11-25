@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "piolet"
+version = "0.1.0"
+description = "Entraîner sur preuve : un greffon qui pilote l'entraînement d'un modèle par un référentiel de compétences, un examen par compétence et l'arrêt dès la preuve."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+authors = [{ name = "IMDTEC SAS" }]
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24", "scikit-learn>=1.3", "pyyaml>=6"]
+keywords = ["active learning", "early stopping", "LoRA", "frugal AI", "IA frugale", "competency-based training", "certification"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Natural Language :: French",
+]
+
+[project.optional-dependencies]
+hf = ["torch>=2.1", "transformers>=4.40", "peft>=0.10"]
+dev = ["pytest>=7"]
+
+[project.scripts]
+piolet = "piolet.cli:main"
+
+[project.entry-points."piolet.modeles"]
+noyau-logistique = "piolet.modeles:NoyauLogistique"
+mlp = "piolet.modeles:MLP"
+texte-logistique = "piolet.modeles:TexteLogistique"
+
+[tool.setuptools.packages.find]
+include = ["piolet*"]
+
+[tool.setuptools.package-data]
+piolet = ["gabarit/*.html", "donnees/*.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::sklearn.exceptions.ConvergenceWarning"]
