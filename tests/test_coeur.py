@@ -164,3 +164,20 @@ def test_ticket_exige_une_hypothese_pour_estimer():
     t.estime("Énergie", 0.1, "kWh", "65 W")
     assert [l["nature"] for l in t.en_dict()] == ["mesuré", "estimé"]
     assert math.isclose(t.lignes[1].valeur, 0.1)
+
+
+def test_page_lisible_sans_javascript():
+    """Les chiffres du banc et du relevé figurent dans le HTML lui-même, pour les lecteurs sans JavaScript."""
+    import json
+    from pathlib import Path
+
+    from piolet.releve import rendre_html
+
+    racine = Path(__file__).resolve().parent.parent / "banc"
+    banc = json.loads((racine / "resultats.json").read_text(encoding="utf-8"))
+    releve = json.loads((racine / "releve-demo.json").read_text(encoding="utf-8"))
+    page = rendre_html(releve, banc)
+    assert '<div id="banc-contenu"><div class="statique">' in page
+    assert '<div class="carte" id="carte-releve"><div class="statique">' in page
+    assert "140 étiquettes" in page and "897 étiquettes" in page
+    assert "Moyenne" in page

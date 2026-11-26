@@ -6,6 +6,7 @@ incluses dans la page, et un relevé local peut y être ouvert sans être envoy�
 
 from __future__ import annotations
 
+import html
 import json
 import math
 from pathlib import Path
@@ -23,13 +24,61 @@ def alleger_banc(banc: dict[str, Any]) -> dict[str, Any]:
     return leger
 
 
+_VIDE_RELEVE = '<p class="vide">Aucun relevé chargé.</p>'
+_VIDE_BANC = '<p class="vide">Aucun résultat de banc chargé.</p>'
+
+
+def _esc(x: Any) -> str:
+    return html.escape(str(x), quote=True)
+
+
+def statique_banc(banc: dict[str, Any]) -> str:
+    """Tableau HTML des résultats, lisible sans JavaScript (le script le remplace par les graphiques)."""
+    graines = banc.get("config", {}).get("graines", "?")
+    lignes = []
+    for groupe, unite in (("etiquettes", "étiquettes"), ("epoques", "époques")):
+        for v in banc.get(groupe, {}).values():
+            r = v["resume"]
+            lignes.append(
+                f"<tr><td>{_esc(v['libelle'])}</td><td>{_nb(r[groupe]['mediane'])} {unite}</td>"
+                f"<td>{_nb(r[groupe]['moyenne'])}</td><td>{'sans examen' if r['sessions_moyennes'] == 0 else _pc(r['taux_certification'])}</td>"
+                f"<td>{_pc(r['test_taux_toutes_acquises'])}</td></tr>"
+            )
+    return (
+        f'<div class="statique"><p>Résultats du banc public, {graines} graines. « Test tenu » : part des modèles '
+        "dont chaque compétence reste au seuil sur un test final jamais vu. Détail : banc/RESULTATS.md.</p>"
+        "<table><thead><tr><th>Méthode</th><th>Médiane</th><th>Moyenne</th><th>Certifiés</th><th>Test tenu</th></tr></thead>"
+        f"<tbody>{''.join(lignes)}</tbody></table></div>"
+    )
+
+
+def statique_releve(releve: dict[str, Any]) -> str:
+    """Résumé HTML d'un relevé, lisible sans JavaScript."""
+    ref = releve.get("referentiel", {})
+    cert = releve.get("certificatif", {})
+    etat = "certifié" if releve.get("certifie") else "non certifié"
+    lignes = "".join(
+        f"<tr><td>{_esc(n['competence'])}</td><td>{_f3(n['score'])}</td><td>{_f3(n['seuil'])}</td>"
+        f"<td>{'acquise' if n['acquise'] else 'non acquise'}</td></tr>"
+        for n in cert.get("notes", [])
+    )
+    return (
+        f'<div class="statique"><p>{_esc(ref.get("titre", ""))} · modèle : {_esc(releve.get("modele", {}).get("nom", ""))} · '
+        f"{etat} ({releve.get('sessions', 0)} session(s) de certification).</p>"
+        "<table><thead><tr><th>Compétence</th><th>Score F1 à l'examen de certification</th><th>Seuil</th><th>État</th></tr></thead>"
+        f"<tbody>{lignes}</tbody></table></div>"
+    )
+
+
 def rendre_html(releve: dict[str, Any] | None = None, banc: dict[str, Any] | None = None) -> str:
     gabarit = GABARIT.read_text(encoding="utf-8")
     donnees: dict[str, Any] = {}
     if releve:
         donnees["releve"] = releve
+        gabarit = gabarit.replace(_VIDE_RELEVE, statique_releve(releve))
     if banc:
         donnees["banc"] = alleger_banc(banc)
+        gabarit = gabarit.replace(_VIDE_BANC, statique_banc(banc))
     charge = json.dumps(donnees, ensure_ascii=False).replace("</", "<\\/")
     return gabarit.replace(_MARQUE, charge)
 
@@ -77,7 +126,7 @@ def resultats_markdown(banc: dict[str, Any]) -> str:
             certif = ("Arrêt décidé sur l'examen formatif seul, sans examen de certification. " if r["sessions_moyennes"] == 0 else
                       f"Certifiés : {_pc(r['taux_certification'])} (sessions : {str(r['sessions_moyennes']).replace('.', ',')} en moyenne). ")
             L.append(
-                f"- **{v['libelle']}** : {_nb(s['mediane'])} {unite} (médiane ; quartiles {_nb(s['q1'])} à {_nb(s['q3'])}). "
+                f"- **{v['libelle']}** : {_nb(s['mediane'])} {unite} (médiane ; quartiles {_nb(s['q1'])} à {_nb(s['q3'])} ; moyenne {_nb(s['moyenne'])}). "
                 + certif +
                 f"Test final tenu : {_pc(r['test_taux_toutes_acquises'])} ; F1 le plus bas : {_f3(r['test_score_min_moyen'])} en moyenne."
             )
@@ -107,7 +156,9 @@ def resultats_markdown(banc: dict[str, Any]) -> str:
                        else f"contre {_pc(f['test_taux_toutes_acquises'])} après {_nb(f['epoques']['mediane'])} époques")
         L.append(f"- Sur les époques, Piolet s'arrête après {_nb(p['epoques']['mediane'])} époques (médiane) au lieu de {_nb(f['epoques']['mediane'])} ; "
                  f"le niveau tient sur le test final pour {_pc(p['test_taux_toutes_acquises'])} des modèles, {comparaison}. Quand le modèle plafonne près du seuil, "
-                 "Piolet va jusqu'au budget et passe la session finale : il ne coûte alors pas plus que l'entraînement fixe.")
+                 "Piolet va jusqu'au budget et passe la session finale : il ne coûte alors pas plus que l'entraînement fixe. "
+                 f"C'est pourquoi la moyenne ({_nb(p['epoques']['moyenne'])} époques, {_pc(1 - p['epoques']['moyenne'] / f['epoques']['mediane'])} de moins) "
+                 f"est moins favorable que la médiane ({_pc(1 - p['epoques']['mediane'] / f['epoques']['mediane'])} de moins).")
     if "arret_sklearn" in B:
         a = B["arret_sklearn"]["resume"]
         L.append(f"- L'arrêt précoce de scikit-learn (validation interne) s'arrête tôt ({_nb(a['epoques']['mediane'])} époques) mais ne connaît pas le niveau exigé : "

@@ -9,7 +9,7 @@ Piolet est publié par IMDTEC SAS, organisme de formation certifié Qualiopi, so
 ## En bref
 
 - **140 étiquettes au lieu de 897** pour certifier un modèle au niveau requis, soit 84 % de moins (médiane sur 20 graines).
-- **46 époques au lieu de 200** (médiane). Sur un test jamais vu, le niveau tient aussi souvent qu'après 200 époques : 85 % des modèles dans les deux cas.
+- **46 époques au lieu de 200** (médiane ; 97 en moyenne, car un modèle qui plafonne près du seuil va jusqu'au budget). Sur un test jamais vu, le niveau tient aussi souvent qu'après 200 époques : 85 % des modèles dans les deux cas.
 - **Aucune donnée issue d'un modèle tiers.** La garde de provenance refuse tout exemple qui n'indique pas son origine, ou qui vient d'un autre modèle.
 - **Un résultat négatif publié.** Notre variante « ciblée » n'a pas fait mieux que la méthode classique d'incertitude. Nous la gardons, documentée, mais elle n'est pas la stratégie par défaut.
 
